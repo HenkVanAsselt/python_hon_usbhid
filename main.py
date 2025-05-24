@@ -5,19 +5,40 @@ VENDOR_ID = 0x0c2e
 PRODUCT_ID = 0x0db3
 
 
-def send_command(device: hid.device, cmd: list[int], description="") -> None:
+def send_command(device: hid.device, cmd: list[int] | str, description="") -> None:
+    """
+
+    :param device: The USBHID device to send the command to (it has to be open)
+    :param cmd: The command to send. It has to be a list of integers, or a string like "REVINF."
+    :param description: A string which describes the command. For information only
+    :return: Nothing
+
+
+
+
+    """
 
     print(f"Data to send for {description}: {cmd}")
+
+    # If this is a list of integers, send it right away.
     if isinstance(cmd, list):
         device.write(cmd)
         return
 
-    if isinstance(cmd, str) and cmd.endswith('.'):
+    # If the command is a string, perform some checks and modifications
+    if isinstance(cmd, str):
+        # A text command has to end with a dot
+        if not cmd.endswith('.'):
+            cmd = cmd + '.'
+        # If there is not appropiate header, add it here.
+        # Then convert the string to a list of integers, as that is what is required for device.write()
         if not cmd.startswith('\xFD'):
             cmd = b'\xFD\x0F\x16\x4d\x0d' + bytearray(cmd, encoding="utf-8")
             print(f"New cmd: {cmd=}")
             cmd = list(cmd)     # Conver bytearray to a list of integers
         print(f"New cmd: {cmd=}")
+
+        # Now send the command to the scanner
         device.write(cmd)
         return
 
@@ -26,23 +47,43 @@ def send_command(device: hid.device, cmd: list[int], description="") -> None:
         return
 
 
-def read_response(device: hid.device, timeout=1000) -> str:
+def read_response(device: hid.device, timeout=500) -> str:
+    """ Read the full response from the connected USBHID scanner
+
+    :param device: The device to read the response from
+    :param timeout: Maximum duration to wait for a response. Default is 500ms
+    :return: A string with the response
+    """
+
     full_response = ""
     while True:
+
+        # Read the (partial) response
         data_received = device.read(64, timeout_ms=timeout)
+
+        # If no more data was received, return the response assembled up to now.
         if not data_received:
             return full_response
-        print("Data received:", data_received)
-        print("Packet length:", len(data_received))
+        # print("Data received:", data_received)
+        # print("Packet length:", len(data_received))
+
         payload_length = data_received[1]
         # print(f"{payload_length=}")
+
+        # Extract the AIM identifere
         aim_id = data_received[2:5]
         # print(f"{aim_id=}")
         aim_id_str = "".join([chr(number) for number in aim_id])
+
+        # Extract the payload
         payload = data_received[5:-3]
         print(f"{payload=}")
         payload_str = "".join([chr(number) for number in payload[0:payload_length]])
+
+        # For debugging purposes, show the AIM ID and the payload of the partial response
         print(f"{aim_id_str=} {payload_str=}")
+
+        # Add the (partial) response to the full response string to be returned.
         full_response += payload_str
 
 
@@ -73,35 +114,9 @@ def main():
     response = read_response(device)
     print(f"{response}")
 
-
-    # Example of REVINF. response:
-    #
-    # Data
-    # received: [2, 56, 93, 88, 48, 80, 114, 111, 100, 117, 99, 116, 32, 78, 97, 109, 101, 58, 32, 86, 111, 121, 97, 103,
-    #            101, 114, 32, 49, 54, 48, 50, 103, 13, 10, 66, 111, 111, 116, 32, 82, 101, 118, 105, 115, 105, 111, 110,
-    #            58, 32, 58, 32, 56, 57, 57, 50, 13, 10, 83, 111, 102, 116, 63, 0, 1]
-    # Data
-    # received: [2, 56, 93, 88, 48, 119, 97, 114, 101, 32, 80, 97, 114, 116, 32, 78, 117, 109, 98, 101, 114, 58, 32, 67,
-    #            87, 48, 48, 48, 48, 56, 50, 66, 66, 65, 13, 10, 83, 111, 102, 116, 119, 97, 114, 101, 32, 82, 101, 118,
-    #            105, 115, 105, 111, 110, 58, 32, 36, 80, 114, 111, 106, 101, 63, 0, 1]
-    # Data
-    # received: [2, 56, 93, 88, 48, 99, 116, 82, 101, 118, 105, 115, 105, 111, 110, 58, 32, 49, 54, 51, 52, 53, 32, 13,
-    #            10, 83, 101, 114, 105, 97, 108, 32, 78, 117, 109, 98, 101, 114, 58, 32, 49, 53, 50, 51, 50, 66, 49, 70,
-    #            48, 67, 13, 10, 83, 117, 112, 112, 111, 114, 116, 101, 100, 63, 0, 1]
-    # Data
-    # received: [2, 56, 93, 88, 48, 32, 73, 70, 58, 32, 66, 108, 117, 101, 116, 111, 111, 116, 104, 13, 10, 80, 67, 66,
-    #            32, 65, 115, 115, 101, 109, 98, 108, 121, 32, 73, 68, 58, 32, 48, 48, 48, 48, 48, 48, 13, 10, 69, 110,
-    #            103, 105, 110, 101, 32, 70, 105, 114, 109, 119, 97, 114, 101, 63, 0, 1]
-    # Data
-    # received: [2, 56, 93, 88, 48, 32, 84, 121, 112, 101, 58, 32, 78, 47, 65, 32, 32, 32, 82, 101, 118, 105, 115, 105,
-    #            111, 110, 58, 32, 78, 47, 65, 32, 32, 32, 83, 101, 114, 105, 97, 108, 32, 78, 117, 109, 98, 101, 114, 58,
-    #            32, 78, 47, 65, 32, 32, 32, 67, 104, 101, 99, 107, 115, 63, 0, 1]
-    # Data
-    # received: [2, 9, 93, 88, 48, 117, 109, 58, 32, 78, 47, 65, 13, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    #            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63, 0, 0]
-    # Data
-    # received: [2, 8, 93, 90, 54, 82, 69, 86, 73, 78, 70, 6, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    #            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0]
+    send_command(device, "CBR?.")
+    response = read_response(device)
+    print(f"{response}")
 
     # Scanner on
     data_to_send = [0xFD, 0x03, 0x16, 0x54, 0x0D]
@@ -115,6 +130,12 @@ def main():
     # Scanner off
     data_to_send = [0xFD, 0x03, 0x16, 0x55, 0x0d]
     send_command(device, data_to_send, description="Scanner off")
+
+    # Get all Codabar selections
+    cmd = "CBR?."
+    send_command(device, cmd, description="Get Codabar selections")
+    response = read_response(device, timeout=2000)
+    print(f"{response=}")
 
     # Close the device
     device.close()
