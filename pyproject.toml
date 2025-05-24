@@ -1,0 +1,8 @@
+[project]
+name = "python-hon-usbhid"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "hidapi>=0.14.0.post4",
+]
