@@ -57,15 +57,15 @@ The REVINF. response is a multipacket message, and looks like this:
     Data received: [2, 8, 93, 90, 54, 82, 69, 86, 73, 78, 70, 6, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0]
 
 * Byte 0 is fixed, is has value `\x02`, also known as [STX] or 'Start of Transmission'
-* Byte 1 is the lenght of the data in this package
+* Byte 1 is the length of the data in this package
 * Byte 2..4 are 3 characters, representing the AIM identifier of the barcode scanned. If this is a repsonse on a command, 
 then the values are `[93d, 88d, 48d]` which is the string `]X0` which represents Code39.
 * Contents, filled with zero's.
 * Trailer: [63, 0, 1]
 
-In the partly REVINF. response, the AIM id `]X0`.
-
-In the last message of the REVINF. response, the AIM id becomes ']Z6', the command is repeated following by a one byte status code, 
+In the first REVINF. responses, the AIM id `]X0`, but the last part becomes different:
+* the AIM id becomes ']Z6', 
+* the command is repeated following by a one byte status code, 
 which can be ACK `0x06`, NAK `0x15` or ENQ `0x05` and then terminated with a `.` (period).
 
 The above is described in the manuals as follows:
@@ -73,20 +73,18 @@ The above is described in the manuals as follows:
 * ACK Indicates a good command which has been processed.
 * ENQ Indicates an invalid Tag or SubTag command.
 * NAK Indicates the command was good, but the Data field entry was out of the allowable range for this Tag and SubTag combination, e.g., an entry for a minimum message length of 100 when the field will only accept 2 charac- ters.
-
 * When responding, the device echoes back the command sequence with the status character inserted directly before each of the punctuation marks (the period, exclamation point, comma, or semicolon) in the command.
 
-Example:
+Example: What are the device’s settings for all Codabar selections?
 
-Example #4: What are the device’s settings for all Codabar selections?
+Command: `CBR?.`
 
-Command: CBR?.
-Response: CBRENA1[ACK],SSX0[ACK],CK20[ACK],CCT1[ACK],MIN2[ACK],MAX60[ACK],DFT[ACK].
-This response indicates that the device’s Codabar Coding Enable (CBRENA) is set to 1, or on;
+Response: `CBRENA1[ACK],SSX0[ACK],CK20[ACK],CCT1[ACK],MIN2[ACK],MAX60[ACK],DFT[ACK].`
 
-the Start/Stop Character (SSX) is set to 0, or Don’t Transmit; the Check Character (CK2) is set to 0, or Not Required; concatenation (CCT) is set to 1, or Enabled;
-
-the Minimum Message Length (MIN) is set to 2 characters; the Maximum Message Length (MAX) is set to 60 characters; and the Default setting (DFT) has no value.
+This response indicates that 
+* the device’s Codabar Coding Enable (CBRENA) is set to 1, or on;
+* the Start/Stop Character (SSX) is set to 0, or Don’t Transmit; the Check Character (CK2) is set to 0, or Not Required; concatenation (CCT) is set to 1, or Enabled;
+* the Minimum Message Length (MIN) is set to 2 characters; the Maximum Message Length (MAX) is set to 60 characters; and the Default setting (DFT) has no value.
 
 # References
 * https://s3lph.me/configuration-of-honeywell-barcode-scanners.html

@@ -6,3 +6,13 @@ requires-python = ">=3.12"
 dependencies = [
     "hidapi>=0.14.0.post4",
 ]
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = """
+    too-many-arguments,
+    line-too-long,
+    c-extension-no-member,
+"""
+
+

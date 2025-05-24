@@ -1,10 +1,24 @@
-import hid
+# File header for Doxygen document generator:
+## @file main.py
+## @brief main module for Python Honeywell USBHID interface
+
+"""main module for Python Honeywell USBHID interface"""
+
+import hid          # type: ignore[import-untyped]
 
 # Replace with your device's vendor ID and product ID
 VENDOR_ID = 0x0c2e
 PRODUCT_ID = 0x0db3
 
+# Some contants
+ENQ = '\x05'
+ACK = '\x06'
+NAK = '\x015'
+SYN = '\x16'
 
+# ----------------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------------
 def send_command(device: hid.device, cmd: list[int] | str, description="") -> None:
     """
 
@@ -12,10 +26,6 @@ def send_command(device: hid.device, cmd: list[int] | str, description="") -> No
     :param cmd: The command to send. It has to be a list of integers, or a string like "REVINF."
     :param description: A string which describes the command. For information only
     :return: Nothing
-
-
-
-
     """
 
     print(f"Data to send for {description}: {cmd}")
@@ -33,20 +43,21 @@ def send_command(device: hid.device, cmd: list[int] | str, description="") -> No
         # If there is not appropiate header, add it here.
         # Then convert the string to a list of integers, as that is what is required for device.write()
         if not cmd.startswith('\xFD'):
-            cmd = b'\xFD\x0F\x16\x4d\x0d' + bytearray(cmd, encoding="utf-8")
+            # Add the preamble and convert the bytesarray to a list of integers
+            cmd = list(b'\xFD\x0F\x16\x4d\x0d' + bytearray(cmd, encoding="utf-8"))
             print(f"New cmd: {cmd=}")
-            cmd = list(cmd)     # Conver bytearray to a list of integers
-        print(f"New cmd: {cmd=}")
 
         # Now send the command to the scanner
         device.write(cmd)
         return
 
-    else:
-        print(f"Invalid command '{cmd}'")
-        return
+    print("Invalid command {cmd}")
+    return
 
 
+# ----------------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------------
 def read_response(device: hid.device, timeout=500) -> str:
     """ Read the full response from the connected USBHID scanner
 
@@ -87,14 +98,18 @@ def read_response(device: hid.device, timeout=500) -> str:
         full_response += payload_str
 
 
-def main():
+def main() -> None:
+    """ Main functions
+
+    :return: Nothing
+    """
 
     # Open the device
     try:
         device = hid.device()
         device.open(VENDOR_ID, PRODUCT_ID)
         print("Device opened successfully.")
-    except Exception as e:
+    except OSError as e:
         print(f"Failed to open device: {e}")
         return
 
