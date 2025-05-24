@@ -37,14 +37,14 @@ Here it becomes a litte more complicate, as there will be a response
 
 For example the command REVINF. will make the scanner return software revision information in multiple packages.
 
-Send [0xFD, 0x0F, 0x16, 0x4D, 0x0D, 0x52, 0x45, 0x56, 0x49, 0x4e, 0x46, 0x2e]
-
-* Byte 0 is fixed, `0xFD` and starts the command
+Send [0xFD, 0x0F, 0x16, 0x4D, 0x0D, 0x52, 0x45, 0x56, 0x49, 0x4e, 0x46, 0x2e] 
+Wherein:
+* Byte 0 has the fixed value `0xFD`
 * Byte 1 could be the length of the command, but the purpose is not clear.
-* Byte 2 is fixed, the `[SYN]` character `0x16`
-* Byte 3 is an `M` (0x4d), indicating a command?
-* Byte 4 is fixed, an `[CR]` (0x0d)
-* Next is the command, in this case `REVINF.`
+* Byte 2 has the fixed value `[SYN]` (0x16)
+* Byte 3 is an `M` (0x4d), indicating a Menu command / Configuration command
+* Byte 4 has the fixed value `[CR]` (0x0d)
+* Byte 5... is the command, in this case `REVINF.`
 
 The REVINF. response is a multipacket message, and looks like this:
 

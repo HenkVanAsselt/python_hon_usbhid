@@ -4,17 +4,18 @@
 
 """main module for Python Honeywell USBHID interface"""
 
-import hid          # type: ignore[import-untyped]
+import hid  # type: ignore[import-untyped]
 
 # Replace with your device's vendor ID and product ID
-VENDOR_ID = 0x0c2e
-PRODUCT_ID = 0x0db3
+VENDOR_ID = 0x0C2E
+PRODUCT_ID = 0x0DB3
 
 # Some contants
-ENQ = '\x05'
-ACK = '\x06'
-NAK = '\x015'
-SYN = '\x16'
+ENQ = "\x05"
+ACK = "\x06"
+NAK = "\x015"
+SYN = "\x16"
+
 
 # ----------------------------------------------------------------------------
 #
@@ -28,7 +29,7 @@ def send_command(device: hid.device, cmd: list[int] | str, description="") -> No
     :return: Nothing
     """
 
-    print(f"Data to send for {description}: {cmd}")
+    # print(f"Data to send for {description}: {cmd}")
 
     # If this is a list of integers, send it right away.
     if isinstance(cmd, list):
@@ -38,14 +39,14 @@ def send_command(device: hid.device, cmd: list[int] | str, description="") -> No
     # If the command is a string, perform some checks and modifications
     if isinstance(cmd, str):
         # A text command has to end with a dot
-        if not cmd.endswith('.'):
-            cmd = cmd + '.'
+        if not cmd.endswith("."):
+            cmd = cmd + "."
         # If there is not appropiate header, add it here.
         # Then convert the string to a list of integers, as that is what is required for device.write()
-        if not cmd.startswith('\xFD'):
+        if not cmd.startswith("\xfd"):
             # Add the preamble and convert the bytesarray to a list of integers
-            cmd = list(b'\xFD\x0F\x16\x4d\x0d' + bytearray(cmd, encoding="utf-8"))
-            print(f"New cmd: {cmd=}")
+            cmd = list(b"\xfd\x0f\x16\x4d\x0d" + bytearray(cmd, encoding="utf-8"))
+            # print(f"New cmd: {cmd=}")
 
         # Now send the command to the scanner
         device.write(cmd)
@@ -59,7 +60,7 @@ def send_command(device: hid.device, cmd: list[int] | str, description="") -> No
 #
 # ----------------------------------------------------------------------------
 def read_response(device: hid.device, timeout=500) -> str:
-    """ Read the full response from the connected USBHID scanner
+    """Read the full response from the connected USBHID scanner
 
     :param device: The device to read the response from
     :param timeout: Maximum duration to wait for a response. Default is 500ms
@@ -88,18 +89,24 @@ def read_response(device: hid.device, timeout=500) -> str:
 
         # Extract the payload
         payload = data_received[5:-3]
-        print(f"{payload=}")
+        # print(f"{payload=}")
         payload_str = "".join([chr(number) for number in payload[0:payload_length]])
 
         # For debugging purposes, show the AIM ID and the payload of the partial response
-        print(f"{aim_id_str=} {payload_str=}")
+        # print(f"{aim_id_str=} {payload_str=}")
 
         # Add the (partial) response to the full response string to be returned.
+        if '\x06.' in payload_str:
+            continue
+            
         full_response += payload_str
 
 
+# ----------------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------------
 def main() -> None:
-    """ Main functions
+    """Main functions
 
     :return: Nothing
     """
@@ -108,9 +115,9 @@ def main() -> None:
     try:
         device = hid.device()
         device.open(VENDOR_ID, PRODUCT_ID)
-        print("Device opened successfully.")
+        # print("Device opened successfully.")
     except OSError as e:
-        print(f"Failed to open device: {e}")
+        print(f"Failed to open device: {e}  {VENDOR_ID=} {PRODUCT_ID=}")
         return
 
     # Beep
@@ -119,8 +126,8 @@ def main() -> None:
 
     # REVINF.
     # [FD][07][52][45][56][49][4E][46][2E]
-    #                    length?  SYN   M     CR    R     E     V     I     N     F     .
-    data_to_send = [0xFD, 0x0F, 0x16, 0x4D, 0x0D, 0x52, 0x45, 0x56, 0x49, 0x4e, 0x46, 0x2e]
+    #                     length?  SYN   M   CR    R     E     V     I     N     F     .
+    data_to_send = [0xFD, 0x0F, 0x16, 0x4D, 0x0D, 0x52, 0x45, 0x56, 0x49, 0x4E, 0x46, 0x2E ]
     send_command(device, "REVINF.", "REVINF.")
     response = read_response(device)
     print(f"{response}")
@@ -143,19 +150,22 @@ def main() -> None:
     print(f"{response=}")
 
     # Scanner off
-    data_to_send = [0xFD, 0x03, 0x16, 0x55, 0x0d]
+    data_to_send = [0xFD, 0x03, 0x16, 0x55, 0x0D]
     send_command(device, data_to_send, description="Scanner off")
 
-    # Get all Codabar selections
-    cmd = "CBR?."
-    send_command(device, cmd, description="Get Codabar selections")
-    response = read_response(device, timeout=2000)
-    print(f"{response=}")
+    # # Get all Codabar selections
+    # cmd = "CBR?."
+    # send_command(device, cmd, description="Get Codabar selections")
+    # response = read_response(device, timeout=2000)
+    # print(f"{response=}")
 
     # Close the device
     device.close()
-    print("Device closed.")
+    # print("Device closed.")
 
 
+# ----------------------------------------------------------------------------
+#
+# ----------------------------------------------------------------------------
 if __name__ == "__main__":
     main()
