@@ -86,6 +86,26 @@ This response indicates that
 * the Start/Stop Character (SSX) is set to 0, or Don’t Transmit; the Check Character (CK2) is set to 0, or Not Required; concatenation (CCT) is set to 1, or Enabled;
 * the Minimum Message Length (MIN) is set to 2 characters; the Maximum Message Length (MAX) is set to 60 characters; and the Default setting (DFT) has no value.
 
+## Command terminator
+As a command can be different in length, is nees to be terminated with a special character.
+
+The terminator also determines where the setting is stored:
+* A period `.` stores the setting in non-volatile memory (flash)
+* An exclamation mark `!` stores the setting in volatile memory (RAM)
+* Even commands that do not have to be stored, like DEFALT. or RESET_. do require a terminator.
+
+
+## Concatenating commands
+Command may be concatenated with a semicolon `;`
+
+## Query commands
+To query the scanner on how commands are implemented on a specific scanner, there are a set of query characters:
+* `^` provides the command's default setting
+* `?` provides the command's current setting
+* `*` provides the command's value option.
+  * In the response, a `-` separator indicates a continous value range
+  * In the response, a `|` separator indicates a non-continous lis of values. 
+
 # References
 * https://s3lph.me/configuration-of-honeywell-barcode-scanners.html
 * Honeywell serial command tutorial: https://honeywellsps.my.salesforce.com/sfc/p/#00000000SK3U/a/A00000004dOY/IV3Nc9ULigAPhFaIvILtJcBqnQRk.ArskZ6z917AugE
