@@ -11,10 +11,12 @@ import argparse
 import hid  # type: ignore[import-untyped]
 
 # Local imports
+import hid_devices
 from hon_hidusb import send_command, read_response
 
 
 # Replace with your device's vendor ID and product ID
+# For the Honeywell 1602g Pockatable scanner:
 VENDOR_ID = 0x0C2E
 PRODUCT_ID = 0x0DB3
 
@@ -34,6 +36,13 @@ def main(args: dict) -> None:
     :param args: Dictionary with commandline arguments
     :return: Nothing
     """
+
+    if args.list:
+        hid_devices.show_devices()
+        return
+
+    if args.mask:
+        args.vendor_id, args.product_id = hid_devices.select_device(args.mask)
 
     if args.command:
 
@@ -59,8 +68,11 @@ def main(args: dict) -> None:
             device = hid.device()
             device.open(args.vendor_id, args.product_id)
             # print("Device opened successfully.")
+        except TypeError as e:
+            print(f"Invalid vendor_id {args.vendor_id} and/or product_id {args.product_id}")
+            return
         except OSError as e:
-            print(f"Failed to open device: {e}  {VENDOR_ID=} {PRODUCT_ID=}")
+            print(f"Failed to open device: {e}  {args.vendor_id=} {args.product_id=}")
             return
 
         # Just test some stuff
@@ -114,12 +126,12 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser(description="HON Scanner control", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument(
-        "--command", type=str, help="Command(s) to send to the scanner"
-    )
+    parser.add_argument("-l", "--list", action='store_true', help="List available USB devices")
+    parser.add_argument("-c", "--command", type=str, help="Command(s) to send to the scanner")
 
-    parser.add_argument("--vendor_id", type=int, help="USB Vendor ID (default: %(default)s)", default=0x0C2E)
-    parser.add_argument("--product_id", type=int, help="USB Product ID", default=0x0DB3)
+    parser.add_argument("-v", "--vendor_id", type=int, help="USB Vendor ID (default: %(default)s)") #, default=0x0C2E)
+    parser.add_argument("-p", "--product_id", type=int, help="USB Product ID") #, default=0x0DB3)
+    parser.add_argument("-m", "--mask", type=str, help="Mask to filter on Vendor or Product", default="")
 
     args = parser.parse_args()
     return args

@@ -87,7 +87,7 @@ This response indicates that
 * the Minimum Message Length (MIN) is set to 2 characters; the Maximum Message Length (MAX) is set to 60 characters; and the Default setting (DFT) has no value.
 
 ## Command terminator
-As a command can be different in length, is nees to be terminated with a special character.
+As a command can be different in length, is needs to be terminated with a special character.
 
 The terminator also determines where the setting is stored:
 * A period `.` stores the setting in non-volatile memory (flash)
