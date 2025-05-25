@@ -12,11 +12,31 @@ import hid  # type: ignore[import-untyped]
 #
 # ----------------------------------------------------------------------------
 def send_command(device: hid.device, cmd: list[int] | str) -> None:
-    """
+    """Send a command to the USBHID device. It can be a list of integers, or a string
 
     :param device: The USBHID device to send the command to (it has to be open)
     :param cmd: The command to send. It has to be a list of integers, or a string like "REVINF."
     :return: Nothing
+
+    Examples:
+
+    * Send(device, [0xFD, 0x0F, 0x16, 0x4D, 0x0D, 0x52, 0x45, 0x56, 0x49, 0x4e, 0x46, 0x2e])
+
+    Wherein:
+        * Byte 0 has the fixed value `0xFD`
+        * Byte 1 could be the length of the command, but the purpose is not clear.
+        * Byte 2 has the fixed value `[SYN]` (0x16)
+        * Byte 3 is an `M` (0x4d), indicating a Menu command / Configuration command
+        * Byte 4 has the fixed value `[CR]` (0x0d)
+        * Byte 5... is the command, in this case `REVINF.`
+
+    * Send(device, "REVINF.")
+
+    Custom commands:
+    * Send(device, "BEEP")
+    * Send(device, "TRIGGER_ON")
+    * Send(device, "TRIGGER_OFF")
+
     """
 
     # If this is a list of integers, send it right away.

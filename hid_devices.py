@@ -47,8 +47,7 @@ def select_device(mask="") -> tuple[int, int] | tuple[None, None]:
             # print(f"Found {mask} in {device["product_string"]}")
             device_list.append(device)
 
-    # print(device_list)
-
+    # Nothing was found, or matched the mask
     if not device_list:
         return None, None
 
@@ -56,19 +55,24 @@ def select_device(mask="") -> tuple[int, int] | tuple[None, None]:
     if len(device_list) == 1:
         return device_list[0]["vendor_id"], device_list[0]["product_id"]
 
+    # If there are multiple matches, print the info and let the user make a slection
     while True:
-        # If there are multiple matches, print the info and let the user make a slection
+        # Show the list
         print()
         for i, device in enumerate(device_list):
             print(f"{i} = {device["product_string"]:16} : {device["manufacturer_string"]:40} ({device["vendor_id"]:#x}:{device["product_id"]:#x})")
-
+        # Show the prompt to make a selection
+        print()
         index = int(input(f"Select device 0...{len(device_list)-1}:"))
+        # If the selection was valid, return the vendor_id and product_id of the selected device.
+        # In case of an invalid selection, enter this loop again
         if 0 <= index < len(device_list):
             print(f"Selected {device_list[index]["product_string"]:16} : {device_list[index]["manufacturer_string"]:40}")
             return device_list[index]["vendor_id"], device_list[index]["product_id"]
         # else
         continue
 
+    # We should never reach this part, but if we do, return as if no device was found.
     return None, None
 
 

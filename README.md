@@ -33,7 +33,7 @@ There is no response from the scanner
 
 ## Menu commands / Configuration commands
 
-Here it becomes a litte more complicate, as there will be a response
+Here it becomes a litte more complicated, as there will be a response
 
 For example the command REVINF. will make the scanner return software revision information in multiple packages.
 
@@ -61,7 +61,7 @@ The REVINF. response is a multipacket message, and looks like this:
 * Byte 2..4 are 3 characters, representing the AIM identifier of the barcode scanned. If this is a repsonse on a command, 
 then the values are `[93d, 88d, 48d]` which is the string `]X0` which represents Code39.
 * Contents, filled with zero's.
-* Trailer: [63, 0, 1]
+* Trailer: [63, 0, 1], the meaning of this is unknown to me at this moment.
 
 In the first REVINF. responses, the AIM id `]X0`, but the last part becomes different:
 * the AIM id becomes ']Z6', 
