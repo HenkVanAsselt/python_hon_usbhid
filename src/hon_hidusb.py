@@ -33,9 +33,9 @@ def send_command(device: hid.device, cmd: list[int] | str) -> None:
     * Send(device, "REVINF.")
 
     Custom commands:
-    * Send(device, "BEEP")
-    * Send(device, "TRIGGER_ON")
-    * Send(device, "TRIGGER_OFF")
+        * Send(device, "BEEP")
+        * Send(device, "TRIGGER_ON")
+        * Send(device, "TRIGGER_OFF")
 
     """
 

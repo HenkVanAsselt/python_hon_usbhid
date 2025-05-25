@@ -68,7 +68,7 @@ def main(args: dict) -> None:
             device = hid.device()
             device.open(args.vendor_id, args.product_id)
             # print("Device opened successfully.")
-        except TypeError as e:
+        except TypeError:
             print(f"Invalid vendor_id {args.vendor_id} and/or product_id {args.product_id}")
             return
         except OSError as e:
@@ -129,8 +129,8 @@ def parse_arguments():
     parser.add_argument("-l", "--list", action='store_true', help="List available USB devices")
     parser.add_argument("-c", "--command", type=str, help="Command(s) to send to the scanner")
 
-    parser.add_argument("-v", "--vendor_id", type=int, help="USB Vendor ID (default: %(default)s)") #, default=0x0C2E)
-    parser.add_argument("-p", "--product_id", type=int, help="USB Product ID") #, default=0x0DB3)
+    parser.add_argument("-v", "--vendor_id", type=int, help="USB Vendor ID", default=0x0C2E)
+    parser.add_argument("-p", "--product_id", type=int, help="USB Product ID", default=0x0DB3)
     parser.add_argument("-m", "--mask", type=str, help="Mask to filter on Vendor or Product", default="")
 
     args = parser.parse_args()
